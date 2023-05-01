@@ -761,7 +761,34 @@ void solveJacobian(SquareMatrix A, ColumnVector b, double approximAcc){
     }
     cout << "x(" << counter << "):\n" << x0;
 }
+class PredatorPreyData{
+public:
+    vector <double> nVictimsAtTime;
+    vector <double> nKillersAtTime;
+    vector <double> time;
+    PredatorPreyData(){
+        nVictimsAtTime.resize(0);
+        nKillersAtTime.resize(0);
+        time.resize(0);
+    }
+};
+double numVictimAtTime(double time,double initNumVictims, double initNumKillers, double nApproximationPoints, double a1, double b1, double a2,double b2){
+    return (initNumVictims-a2/b2)*cos(::sqrt(a1*a2)*time)-(initNumKillers-a1/b1)*(sqrt(a2)*b1/(b2* sqrt(a1)))*sin(sqrt(a1*a2)*time)+a2/b2;
+}
+double numKillerAtTime(double time,double initNumVictims, double initNumKillers, double nApproximationPoints, double a1, double b1, double a2,double b2){
+    return (initNumVictims-a2/b2)*(sqrt(a1)*b2)/(b1* sqrt(a2))*sin(sqrt(a1*a2)*time)+(initNumKillers-a1/b1)*cos(sqrt(a1*a2)*time)+a1/b1;
+}
+PredatorPreyData calcPredatorPreyModel(double initNumVictims, double initNumKillers,double timeLimit, double nApproximationPoints, double a1, double b1, double a2,double b2){
+    PredatorPreyData predatorpreydata;
+    for (double time=0;time<=timeLimit;time+=timeLimit/nApproximationPoints){
+        predatorpreydata.nVictimsAtTime.push_back(numVictimAtTime(time,initNumVictims, initNumKillers, nApproximationPoints, a1, b1, a2, b2));
+        predatorpreydata.nKillersAtTime.push_back(numKillerAtTime(time,initNumVictims, initNumKillers, nApproximationPoints, a1, b1, a2, b2));
+        predatorpreydata.time.push_back(time);
+    }
+    return predatorpreydata;
+}
 int main() {
+////Example of simple Matrix operations
 //    LST2Dimension dataSet;
 //    cin>>dataSet;
 //    Matrix ATA=dataSet.matrixx.transpose()*dataSet.matrixx;
@@ -772,11 +799,26 @@ int main() {
 //    cout << fixed << showpoint << setprecision(4);
 //    cout<<"A:\n"<<dataSet.matrixx<<"A_T*A:\n"<<ATA<<"(A_T*A)^-1:\n"<<ATA1<<"A_T*b:\n"<<ATb<<"x~:\n"<<x;
 
+////Jacobian method to solve Ax=b
+//    SquareMatrix A;
+//    ColumnVector b;
+//    double approximAcc;
+//    cin >> A >> b >> approximAcc;
+//    solveJacobian(A,b,approximAcc);
 
-    SquareMatrix A;
-    ColumnVector b;
-    double approximAcc;
-    cin >> A >> b >> approximAcc;
-    solveJacobian(A,b,approximAcc);
+////Predator-Prey model
+    double initNumVictims, initNumKillers,timeLimit,nApproximationPoints, a1,b1,a2,b2;
+    cin>>initNumVictims>>initNumKillers>>a1>>b1>>a2>>b2>>timeLimit>>nApproximationPoints;
+    PredatorPreyData predatorpreydata =calcPredatorPreyModel(initNumVictims, initNumKillers,timeLimit,nApproximationPoints,a1,b1,a2,b2);
+    cout << fixed << showpoint << setprecision(2);
+    cout<<"t:\n";
+    for (int i=0;i<predatorpreydata.time.size();i++)
+        cout<<predatorpreydata.time[i]<<" ";
+    cout<<"\nv:\n";
+    for (int i=0;i<predatorpreydata.time.size();i++)
+        cout<<predatorpreydata.nVictimsAtTime[i]<<" ";
+    cout<<"\nk:\n";
+    for (int i=0;i<predatorpreydata.time.size();i++)
+        cout<<predatorpreydata.nKillersAtTime[i]<<" ";
     return 0;
 }
